@@ -44,15 +44,33 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-header"><h3 class="card-title">Usuarios ({{ company_users.count }})</h3></div>
+            <div class="card-header"><h3 class="card-title">Usuarios ({{ company_users.count }})</h3>
+                <div class="card-tools"><a href="{% url 'superadmin_company_user_create' object.id %}" class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> Nuevo usuario</a></div>
+            </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-sm">
-                    <thead><tr><th>#</th><th>Usuario</th><th>Nombre</th><th>Admin SaaS</th></tr></thead>
+                    <thead><tr><th>#</th><th>Usuario</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr></thead>
                     <tbody>
                     {% for u in company_users %}
-                        <tr><td>{{ u.id }}</td><td>{{ u.username }}</td><td>{{ u.names }}</td><td>{% if u.is_superadmin %}Sí{% else %}No{% endif %}</td></tr>
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.names }}</td>
+                            <td>{% if u.is_active %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge badge-secondary">Inactivo</span>{% endif %}{% if u.is_superadmin %} <span class="badge badge-dark">Superadmin</span>{% endif %}</td>
+                            <td>
+                                {% if not u.is_superadmin %}
+                                <form method="post" action="{% url 'superadmin_company_user_action' u.id %}" class="form-inline" style="gap:4px">
+                                    {% csrf_token %}
+                                    <input type="text" name="password" class="form-control form-control-sm" placeholder="Nueva clave" style="width:110px">
+                                    <button name="action" value="reset_password" class="btn btn-xs btn-outline-secondary" title="Restablecer contraseña"><i class="fas fa-key"></i></button>
+                                    <button name="action" value="toggle_active" class="btn btn-xs btn-outline-warning" title="Activar/Desactivar"><i class="fas fa-power-off"></i></button>
+                                    <button name="action" value="delete" class="btn btn-xs btn-outline-danger" title="Eliminar" onclick="return confirm('¿Eliminar el usuario {{ u.username }}?');"><i class="fas fa-trash"></i></button>
+                                </form>
+                                {% else %}<span class="text-muted">—</span>{% endif %}
+                            </td>
+                        </tr>
                     {% empty %}
-                        <tr><td colspan="4" class="text-center">Sin usuarios.</td></tr>
+                        <tr><td colspan="5" class="text-center">Sin usuarios.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>

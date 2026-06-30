@@ -5,6 +5,7 @@ from core.tenancy.views import (
     PlanListView, PlanCreateView, PlanUpdateView, PlanDeleteView,
     CompanyListView, CompanyCreateView, CompanyManageView,
     SubscriptionUpdateView,
+    CompanyUserCreateView, CompanyUserActionView,
 )
 
 urlpatterns = [
@@ -18,6 +19,8 @@ urlpatterns = [
     path('empresas/', CompanyListView.as_view(), name='superadmin_company_list'),
     path('empresas/nueva/', CompanyCreateView.as_view(), name='superadmin_company_create'),
     path('empresas/<int:pk>/', CompanyManageView.as_view(), name='superadmin_company_manage'),
+    path('empresas/<int:pk>/usuarios/nuevo/', CompanyUserCreateView.as_view(), name='superadmin_company_user_create'),
+    path('usuarios/<int:pk>/accion/', CompanyUserActionView.as_view(), name='superadmin_company_user_action'),
     # Subscriptions
     path('suscripciones/<int:pk>/editar/', SubscriptionUpdateView.as_view(), name='superadmin_subscription_update'),
 ]

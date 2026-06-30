@@ -1,8 +1,10 @@
 from django import forms
+from django.contrib.auth.models import Group
 
 from core.pos.choices import ENVIRONMENT_TYPE, REGIMEN_RIMPE, TAX_PERCENTAGE
 from core.pos.models import Company
 from core.tenancy.models import Plan, Subscription
+from core.user.models import User
 
 
 class BootstrapFormMixin:
@@ -98,3 +100,23 @@ class SubscriptionForm(BootstrapFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._style_fields()
+
+
+class CompanyUserForm(BootstrapFormMixin, forms.Form):
+    names = forms.CharField(max_length=150, label='Nombre completo')
+    username = forms.CharField(max_length=150, label='Usuario (login)')
+    email = forms.EmailField(required=False, label='Email')
+    password = forms.CharField(max_length=128, label='Contraseña', widget=forms.PasswordInput(render_value=True))
+    group = forms.ModelChoiceField(queryset=Group.objects.all().order_by('name'), label='Rol / Grupo')
+    is_active = forms.BooleanField(required=False, initial=True, label='Activo')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._style_fields()
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('Ya existe un usuario con ese nombre de usuario.')
+        return username
+

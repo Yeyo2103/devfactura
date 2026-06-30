@@ -47,20 +47,26 @@ def create_subscription(company, plan, status='active', start=None):
     return subscription
 
 
-def create_company_admin(company, username, password, names=None, email=None):
+def create_company_user(company, username, password, names=None, email=None, group=None, is_active=True):
+    """Create a user that belongs to a company (tenant)."""
     user = User(
         username=username,
         names=names or username,
         email=email or '',
         company=company,
         is_superadmin=False,
-        is_active=True,
+        is_active=is_active,
     )
     user.set_password(password)
     user.save()
-    group, _ = Group.objects.get_or_create(name=ADMIN_GROUP_NAME)
-    user.groups.add(group)
+    if group is not None:
+        user.groups.add(group)
     return user
+
+
+def create_company_admin(company, username, password, names=None, email=None):
+    group, _ = Group.objects.get_or_create(name=ADMIN_GROUP_NAME)
+    return create_company_user(company, username, password, names=names, email=email, group=group)
 
 
 @transaction.atomic

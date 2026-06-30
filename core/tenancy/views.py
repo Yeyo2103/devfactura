@@ -1,13 +1,16 @@
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, View
 
 from core.pos.models import Company
-from core.tenancy.forms import PlanForm, CompanyCreateForm, CompanyEditForm, SubscriptionForm
+from core.tenancy.forms import PlanForm, CompanyCreateForm, CompanyEditForm, SubscriptionForm, CompanyUserForm
 from core.tenancy.mixins import SuperadminRequiredMixin
 from core.tenancy.models import Plan, Subscription
-from core.tenancy.services import provision_company
+from core.tenancy.services import provision_company, create_company_user
+from core.user.models import User
 
 COMPANY_FIELDS = [
     'ruc', 'company_name', 'commercial_name', 'main_address', 'establishment_address',
@@ -175,3 +178,78 @@ class SubscriptionUpdateView(SuperadminRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Suscripción actualizada.')
         return super().form_valid(form)
+
+
+# ---------------- Company users ----------------
+class CompanyUserCreateView(SuperadminRequiredMixin, View):
+    template_name = 'superadmin/company_user_form.html'
+
+    def get_company(self):
+        return get_object_or_404(Company, pk=self.kwargs['pk'])
+
+    def _render(self, request, company, form):
+        return render(request, self.template_name, {
+            'title': f'Nuevo usuario · {company.commercial_name}',
+            'form': form,
+            'company': company,
+            'list_url': reverse_lazy('superadmin_company_manage', kwargs={'pk': company.id}),
+        })
+
+    def get(self, request, *args, **kwargs):
+        company = self.get_company()
+        return self._render(request, company, CompanyUserForm())
+
+    def post(self, request, *args, **kwargs):
+        company = self.get_company()
+        form = CompanyUserForm(request.POST)
+        if not form.is_valid():
+            return self._render(request, company, form)
+        subscription = getattr(company, 'subscription', None)
+        if subscription is not None:
+            allowed, message = subscription.can_add_user()
+            if not allowed:
+                messages.error(request, message)
+                return self._render(request, company, form)
+        cd = form.cleaned_data
+        create_company_user(
+            company, cd['username'], cd['password'], names=cd['names'],
+            email=cd.get('email'), group=cd['group'], is_active=cd['is_active'],
+        )
+        messages.success(request, f'Usuario "{cd["username"]}" creado en {company.commercial_name}.')
+        return redirect('superadmin_company_manage', pk=company.id)
+
+
+class CompanyUserActionView(SuperadminRequiredMixin, View):
+    """Quick actions over a company user: reset password, toggle active, delete."""
+
+    def post(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        company_id = user.company_id
+        if user.is_superadmin:
+            messages.error(request, 'No se puede gestionar un superadministrador desde aquí.')
+            return self._back(company_id)
+        action = request.POST.get('action')
+        if action == 'toggle_active':
+            user.is_active = not user.is_active
+            user.save()
+            messages.success(request, f'Usuario {"activado" if user.is_active else "desactivado"}.')
+        elif action == 'reset_password':
+            new_password = request.POST.get('password') or user.username
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, f'Contraseña restablecida para "{user.username}".')
+        elif action == 'delete':
+            username = user.username
+            try:
+                user.delete()
+                messages.success(request, f'Usuario "{username}" eliminado.')
+            except Exception as e:
+                messages.error(request, f'No se pudo eliminar: {e}')
+        else:
+            messages.error(request, 'Acción no válida.')
+        return self._back(company_id)
+
+    def _back(self, company_id):
+        if company_id:
+            return redirect('superadmin_company_manage', pk=company_id)
+        return redirect('superadmin_company_list')
