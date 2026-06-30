@@ -2,9 +2,11 @@
 {% load static %}
 {% block assets_login %}
     <script src="{% static 'login/js/login.js' %}"></script>
+    <script src="{% static 'login/js/cosmic.js' %}?v=1"></script>
 {% endblock %}
 
 {% block content %}
+    <canvas id="eg-bg"></canvas>
     <div class="eg-wrap">
         <div class="eg-box">
             <!-- Panel de marca -->
