@@ -135,8 +135,25 @@ $(function () {
 
     // logout
 
-    $('.btnLogout').on('click', function () {
-        localStorage.clear();
+    $('.btnLogout').on('click', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: 'Se cerrará tu sesión actual.',
+            icon: 'question',
+            showCancelButton: true,
+            reverseButtons: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                window.location.href = url;
+            }
+        });
     });
 
     page.initial();
