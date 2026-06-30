@@ -24,6 +24,7 @@ from config import settings
 from core.pos.choices import *
 from core.pos.utilities.pdf_creator import PDFCreator
 from core.pos.utilities.sri import SRI
+from core.pos.utilities.tenant import TenantManager
 from core.user.models import User
 
 
@@ -133,6 +134,9 @@ class Provider(models.Model):
     address = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una dirección', verbose_name='Dirección')
     email = models.CharField(max_length=50, help_text='Ingrese un email', verbose_name='Email')
 
+    objects = TenantManager()
+    all_objects = models.Manager()
+
     def __str__(self):
         return self.get_full_name()
 
@@ -151,6 +155,8 @@ class Provider(models.Model):
 
 class Category(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='categories', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     name = models.CharField(max_length=50, help_text='Ingrese un nombre', verbose_name='Nombre')
 
     def __str__(self):
@@ -167,6 +173,8 @@ class Category(models.Model):
 
 class Product(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='products', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     name = models.CharField(max_length=150, help_text='Ingrese un nombre', verbose_name='Nombre')
     code = models.CharField(max_length=50, help_text='Ingrese un código', verbose_name='Código')
     description = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una descripción', verbose_name='Descripción')
@@ -254,6 +262,8 @@ class Product(models.Model):
 
 class Purchase(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='purchases', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     number = models.CharField(max_length=8, help_text='Ingrese un número de factura', verbose_name='Número de factura')
     provider = models.ForeignKey(Provider, on_delete=models.PROTECT, verbose_name='Proveedor')
     payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE, default=PAYMENT_TYPE[0][0], verbose_name='Tipo de pago')
@@ -424,6 +434,8 @@ class AccountPayablePayment(models.Model):
 
 class Customer(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='customers', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     dni = models.CharField(max_length=13, help_text='Ingrese un número de cédula o RUC', verbose_name='Número de cédula o RUC')
     mobile = models.CharField(max_length=10, null=True, blank=True, help_text='Ingrese un teléfono', verbose_name='Teléfono')
@@ -456,6 +468,8 @@ class Customer(models.Model):
 
 class Receipt(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='receipts', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     voucher_type = models.CharField(max_length=10, choices=VOUCHER_TYPE, verbose_name='Tipo de Comprobante')
     establishment_code = models.CharField(max_length=3, help_text='Ingrese un código del establecimiento emisor', verbose_name='Código del Establecimiento Emisor')
     issuing_point_code = models.CharField(max_length=3, help_text='Ingrese un código del punto de emisión', verbose_name='Código del Punto de Emisión')
@@ -494,6 +508,8 @@ class Receipt(models.Model):
 
 class ExpenseType(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='expense_types', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     name = models.CharField(max_length=50, help_text='Ingrese un nombre', verbose_name='Nombre')
 
     def __str__(self):
@@ -517,6 +533,8 @@ class ExpenseType(models.Model):
 
 class Expense(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='expenses', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.PROTECT, verbose_name='Tipo de Gasto')
     description = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una descripción', verbose_name='Detalles')
     date_joined = models.DateField(default=datetime.now, verbose_name='Fecha de Registro')
@@ -545,6 +563,8 @@ class Expense(models.Model):
 
 class Promotion(models.Model):
     company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='promotions', verbose_name='Empresa')
+    objects = TenantManager()
+    all_objects = models.Manager()
     start_date = models.DateField(default=datetime.now)
     end_date = models.DateField(default=datetime.now)
     active = models.BooleanField(default=True)
@@ -880,6 +900,8 @@ class ElecBillingDetailBase(models.Model):
 
 class Invoice(ElecBillingBase):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, verbose_name='Cliente')
+    objects = TenantManager()
+    all_objects = models.Manager()
     employee = models.ForeignKey(User, null=True, blank=True, on_delete=models.PROTECT, verbose_name='Empleado')
     payment_type = models.CharField(choices=PAYMENT_TYPE, max_length=50, default=PAYMENT_TYPE[0][0], verbose_name='Forma de pago')
     payment_method = models.CharField(choices=INVOICE_PAYMENT_METHOD, max_length=50, default=INVOICE_PAYMENT_METHOD[5][0], verbose_name='Método de pago')
@@ -1143,6 +1165,8 @@ class AccountReceivablePayment(models.Model):
 
 class CreditNote(ElecBillingBase):
     invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, verbose_name='Factura')
+    objects = TenantManager()
+    all_objects = models.Manager()
     motive = models.CharField(max_length=300, null=True, blank=True, help_text='Ingrese una descripción', verbose_name='Motivo')
 
     def __str__(self):
@@ -1316,6 +1340,8 @@ class Quotation(TransactionSummary):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name='Cliente')
     employee = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Empleado')
     active = models.BooleanField(default=True, verbose_name='Activo')
+    objects = TenantManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return f'{self.formatted_number} = {self.customer.get_full_name()}'
@@ -1333,7 +1359,7 @@ class Quotation(TransactionSummary):
         return not self.quotationdetail_set.filter(product__is_inventoried=True, product__stock__lt=F('quantity')).exists()
 
     def send_quotation_by_email(self):
-        company = Company.objects.first()
+        company = self.company
         message = MIMEMultipart('alternative')
         message['Subject'] = f'Proforma {self.formatted_number} - {self.customer.get_full_name()}'
         message['From'] = settings.EMAIL_HOST

@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic import DeleteView, CreateView, ListView
 
 from core.pos.forms import AccountReceivable, AccountReceivablePaymentForm, AccountReceivablePayment
+from core.pos.utilities.tenant import get_current_company_id
 from core.report.forms import ReportForm
 from core.security.mixins import GroupPermissionMixin
 
@@ -27,6 +28,9 @@ class AccountReceivableListView(GroupPermissionMixin, ListView):
                 filters = Q()
                 if len(start_date) and len(end_date):
                     filters &= Q(date_joined__range=[start_date, end_date])
+                cid = get_current_company_id()
+                if cid:
+                    filters &= Q(invoice__company_id=cid)
                 for i in self.model.objects.filter(filters):
                     data.append(i.as_dict())
             elif action == 'search_payments':
@@ -66,7 +70,11 @@ class AccountReceivableCreateView(GroupPermissionMixin, CreateView):
             if action == 'search_account_receivable':
                 data = []
                 term = request.POST['term']
-                for i in AccountReceivable.objects.filter(Q(invoice__customer__user__names__icontains=term) | Q(invoice__customer__dni__icontains=term) | Q(invoice__receipt_number__icontains=term)).exclude(active=False)[0:10]:
+                qs = AccountReceivable.objects.filter(Q(invoice__customer__user__names__icontains=term) | Q(invoice__customer__dni__icontains=term) | Q(invoice__receipt_number__icontains=term)).exclude(active=False)
+                cid = get_current_company_id()
+                if cid:
+                    qs = qs.filter(invoice__company_id=cid)
+                for i in qs[0:10]:
                     data.append(i.as_dict())
             elif action == 'add':
                 with transaction.atomic():

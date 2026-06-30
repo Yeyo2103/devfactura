@@ -69,7 +69,7 @@ class QuotationCreateView(GroupPermissionMixin, CreateView):
     permission_required = 'add_quotation'
 
     def get_company(self):
-        return Company.objects.first() or Company()
+        return self.request.user.company or Company()
 
     def get_end_consumer(self):
         customer = Customer.objects.filter(dni='9999999999999').first()

@@ -18,7 +18,7 @@ class CompanyUpdateView(GroupPermissionMixin, UpdateView):
     success_url = settings.LOGIN_REDIRECT_URL
 
     def get_object(self, queryset=None):
-        return Company.objects.first() or Company()
+        return self.request.user.company or Company()
 
     def post(self, request, *args, **kwargs):
         data = {}

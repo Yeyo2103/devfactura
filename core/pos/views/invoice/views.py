@@ -110,7 +110,7 @@ class InvoiceCreateView(GroupPermissionMixin, CreateView):
     permission_required = 'add_invoice_admin'
 
     def get_company(self):
-        return Company.objects.first() or Company()
+        return self.request.user.company or Company()
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -233,7 +233,7 @@ class InvoiceUpdateView(GroupPermissionMixin, UpdateView):
     permission_required = 'change_invoice_admin'
 
     def get_company(self):
-        return Company.objects.first() or Company()
+        return self.request.user.company or Company()
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

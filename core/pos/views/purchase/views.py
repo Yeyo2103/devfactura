@@ -61,7 +61,7 @@ class PurchaseCreateView(GroupPermissionMixin, CreateView):
         try:
             if action == 'add':
                 with transaction.atomic():
-                    company = Company.objects.first()
+                    company = request.user.company
                     purchase = Purchase.objects.create(
                         number=request.POST['number'],
                         date_joined=request.POST['date_joined'],

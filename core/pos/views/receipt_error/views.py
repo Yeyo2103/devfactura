@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DeleteView
 
 from core.pos.models import ReceiptError
+from core.pos.utilities.tenant import get_current_company_id
 from core.report.forms import ReportForm
 from core.security.mixins import GroupPermissionMixin
 
@@ -29,6 +30,9 @@ class ReceiptErrorListView(GroupPermissionMixin, ListView):
                     filters &= Q(date_joined__range=[start_date, end_date])
                 if len(receipt):
                     filters &= Q(receipt_id=receipt)
+                cid = get_current_company_id()
+                if cid:
+                    filters &= Q(receipt__company_id=cid)
                 for i in self.model.objects.filter(filters):
                     data.append(i.as_dict())
             else:
