@@ -790,7 +790,21 @@ class ElecBillingBase(TransactionSummary):
         except:
             pass
 
+    def check_subscription_for_emission(self):
+        """(bool, msg): valida la suscripción de la empresa antes de emitir."""
+        subscription = getattr(self.company, 'subscription', None)
+        if subscription is None:
+            return True, ''
+        if not subscription.is_active():
+            return False, 'La suscripción de la empresa no está activa o está vencida. Contacte al administrador de la plataforma.'
+        if isinstance(self, Invoice):
+            return subscription.can_emit_invoice()
+        return True, ''
+
     def generate_electronic_invoice_document(self):
+        allowed, message = self.check_subscription_for_emission()
+        if not allowed:
+            return {'resp': False, 'stage': VOUCHER_STAGE[0][0], 'error': message}
         sri = SRI()
         response = sri.create_xml(self)
         if response['resp']:

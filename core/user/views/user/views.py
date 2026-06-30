@@ -28,7 +28,11 @@ class UserListView(GroupPermissionMixin, ListView):
         try:
             if action == 'search':
                 data = []
-                for i in self.model.objects.all():
+                queryset = self.model.objects.all()
+                user = request.user
+                if not getattr(user, 'is_superadmin', False) and user.company_id:
+                    queryset = queryset.filter(company_id=user.company_id)
+                for i in queryset:
                     data.append(i.as_dict())
             elif action == 'reset_password':
                 user = self.model.objects.get(pk=request.POST['id'])

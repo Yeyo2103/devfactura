@@ -38,6 +38,23 @@ class UserForm(forms.ModelForm):
             user_form = super().save(commit=False)
             password = self.cleaned_data['password']
 
+            # Multi-tenant: stamp the company of the creating user and enforce plan limits.
+            request = get_current_request()
+            creator = getattr(request, 'user', None) if request is not None else None
+            is_new = user_form.pk is None
+            if is_new and user_form.company_id is None and creator is not None and creator.is_authenticated:
+                if not getattr(creator, 'is_superadmin', False) and creator.company_id:
+                    user_form.company_id = creator.company_id
+
+            if is_new and user_form.company_id is not None:
+                from core.tenancy.models import Subscription
+                subscription = Subscription.objects.filter(company_id=user_form.company_id).first()
+                if subscription is not None:
+                    allowed, message = subscription.can_add_user()
+                    if not allowed:
+                        data['error'] = message
+                        return data
+
             if user_form.pk is None or not user_form.check_password(password):
                 user_form.set_password(password)
 
