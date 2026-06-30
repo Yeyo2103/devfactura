@@ -113,7 +113,7 @@ class Company(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         if self.pk:
-            Receipt.objects.update(establishment_code=self.establishment_code, issuing_point_code=self.issuing_point_code)
+            Receipt.objects.filter(company=self).update(establishment_code=self.establishment_code, issuing_point_code=self.issuing_point_code)
         super(Company, self).save()
 
     class Meta:
@@ -126,11 +126,12 @@ class Company(models.Model):
 
 
 class Provider(models.Model):
-    name = models.CharField(max_length=50, unique=True, help_text='Ingrese un nombre', verbose_name='Nombre')
-    ruc = models.CharField(max_length=13, unique=True, help_text='Ingrese un RUC', verbose_name='RUC')
-    mobile = models.CharField(max_length=10, unique=True, help_text='Ingrese un número de teléfono celular', verbose_name='Teléfono celular')
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='providers', verbose_name='Empresa')
+    name = models.CharField(max_length=50, help_text='Ingrese un nombre', verbose_name='Nombre')
+    ruc = models.CharField(max_length=13, help_text='Ingrese un RUC', verbose_name='RUC')
+    mobile = models.CharField(max_length=10, help_text='Ingrese un número de teléfono celular', verbose_name='Teléfono celular')
     address = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una dirección', verbose_name='Dirección')
-    email = models.CharField(max_length=50, unique=True, help_text='Ingrese un email', verbose_name='Email')
+    email = models.CharField(max_length=50, help_text='Ingrese un email', verbose_name='Email')
 
     def __str__(self):
         return self.get_full_name()
@@ -149,7 +150,8 @@ class Provider(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50, unique=True, help_text='Ingrese un nombre', verbose_name='Nombre')
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='categories', verbose_name='Empresa')
+    name = models.CharField(max_length=50, help_text='Ingrese un nombre', verbose_name='Nombre')
 
     def __str__(self):
         return self.name
@@ -164,8 +166,9 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='products', verbose_name='Empresa')
     name = models.CharField(max_length=150, help_text='Ingrese un nombre', verbose_name='Nombre')
-    code = models.CharField(max_length=50, unique=True, help_text='Ingrese un código', verbose_name='Código')
+    code = models.CharField(max_length=50, help_text='Ingrese un código', verbose_name='Código')
     description = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una descripción', verbose_name='Descripción')
     category = models.ForeignKey(Category, on_delete=models.PROTECT, verbose_name='Categoría')
     price = models.DecimalField(max_digits=9, decimal_places=4, default=0.00, verbose_name='Precio de Compra')
@@ -250,7 +253,8 @@ class Product(models.Model):
 
 
 class Purchase(models.Model):
-    number = models.CharField(max_length=8, unique=True, help_text='Ingrese un número de factura', verbose_name='Número de factura')
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='purchases', verbose_name='Empresa')
+    number = models.CharField(max_length=8, help_text='Ingrese un número de factura', verbose_name='Número de factura')
     provider = models.ForeignKey(Provider, on_delete=models.PROTECT, verbose_name='Proveedor')
     payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE, default=PAYMENT_TYPE[0][0], verbose_name='Tipo de pago')
     date_joined = models.DateField(default=datetime.now, verbose_name='Fecha de registro')
@@ -419,8 +423,9 @@ class AccountPayablePayment(models.Model):
 
 
 class Customer(models.Model):
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='customers', verbose_name='Empresa')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    dni = models.CharField(max_length=13, unique=True, help_text='Ingrese un número de cédula o RUC', verbose_name='Número de cédula o RUC')
+    dni = models.CharField(max_length=13, help_text='Ingrese un número de cédula o RUC', verbose_name='Número de cédula o RUC')
     mobile = models.CharField(max_length=10, null=True, blank=True, help_text='Ingrese un teléfono', verbose_name='Teléfono')
     birthdate = models.DateField(default=datetime.now, verbose_name='Fecha de nacimiento')
     address = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una dirección', verbose_name='Dirección')
@@ -450,6 +455,7 @@ class Customer(models.Model):
 
 
 class Receipt(models.Model):
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='receipts', verbose_name='Empresa')
     voucher_type = models.CharField(max_length=10, choices=VOUCHER_TYPE, verbose_name='Tipo de Comprobante')
     establishment_code = models.CharField(max_length=3, help_text='Ingrese un código del establecimiento emisor', verbose_name='Código del Establecimiento Emisor')
     issuing_point_code = models.CharField(max_length=3, help_text='Ingrese un código del punto de emisión', verbose_name='Código del Punto de Emisión')
@@ -487,7 +493,8 @@ class Receipt(models.Model):
 
 
 class ExpenseType(models.Model):
-    name = models.CharField(max_length=50, unique=True, help_text='Ingrese un nombre', verbose_name='Nombre')
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='expense_types', verbose_name='Empresa')
+    name = models.CharField(max_length=50, help_text='Ingrese un nombre', verbose_name='Nombre')
 
     def __str__(self):
         return self.name
@@ -509,6 +516,7 @@ class ExpenseType(models.Model):
 
 
 class Expense(models.Model):
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='expenses', verbose_name='Empresa')
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.PROTECT, verbose_name='Tipo de Gasto')
     description = models.CharField(max_length=500, null=True, blank=True, help_text='Ingrese una descripción', verbose_name='Detalles')
     date_joined = models.DateField(default=datetime.now, verbose_name='Fecha de Registro')
@@ -536,6 +544,7 @@ class Expense(models.Model):
 
 
 class Promotion(models.Model):
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE, related_name='promotions', verbose_name='Empresa')
     start_date = models.DateField(default=datetime.now)
     end_date = models.DateField(default=datetime.now)
     active = models.BooleanField(default=True)
@@ -744,7 +753,7 @@ class ElecBillingBase(TransactionSummary):
 
     def generate_receipt_number_full(self):
         if self.receipt_id is None:
-            self.receipt = Receipt.objects.get(voucher_type=self.voucher_type_code, establishment_code=self.company.establishment_code, issuing_point_code=self.company.issuing_point_code)
+            self.receipt = Receipt.objects.get(company=self.company, voucher_type=self.voucher_type_code, establishment_code=self.company.establishment_code, issuing_point_code=self.company.issuing_point_code)
         self.receipt_number = self.generate_receipt_number()
         return self.get_receipt_number_full()
 
@@ -1376,7 +1385,7 @@ class Quotation(TransactionSummary):
             invoice.date_joined = datetime.now().date()
             invoice.company = self.company
             invoice.environment_type = invoice.company.environment_type
-            invoice.receipt = Receipt.objects.get(voucher_type=VOUCHER_TYPE[0][0], establishment_code=invoice.company.establishment_code, issuing_point_code=invoice.company.issuing_point_code)
+            invoice.receipt = Receipt.objects.get(company=invoice.company, voucher_type=VOUCHER_TYPE[0][0], establishment_code=invoice.company.establishment_code, issuing_point_code=invoice.company.issuing_point_code)
             invoice.receipt_number = invoice.generate_receipt_number()
             invoice.receipt_number_full = invoice.get_receipt_number_full()
             invoice.employee_id = self.employee_id
