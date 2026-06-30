@@ -21,8 +21,18 @@
                 </ul>
             </div>
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link"><i class="fas fa-store"></i> Ir al sistema</a></li>
-                <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="d-none d-md-inline">{{ request.user.names|default:request.user.username }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <h6 class="dropdown-header">{{ request.user.username }}</h6>
+                        <a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-store mr-2 text-muted"></i> Ir al sistema</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" href="#" id="logout-link"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión</a>
+                    </div>
+                </li>
             </ul>
         </div>
     </nav>
@@ -48,5 +58,29 @@
         </section>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¿Cerrar sesión?',
+                    text: 'Saldrás del panel de superadministración.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, salir',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        window.location.href = "{% url 'logout' %}";
+                    }
+                });
+            });
+        }
+    });
+</script>
 </body>
 {% endblock %}
