@@ -1,0 +1,63 @@
+{% extends 'superadmin/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Datos de la empresa</h3></div>
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="row">
+                        {% for field in form %}
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}<small class="text-danger">{{ field.errors|striptags }}</small>{% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar cambios</button>
+                    <a href="{{ list_url }}" class="btn btn-default">Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Suscripción</h3></div>
+            <div class="card-body">
+                {% if subscription %}
+                    <p><strong>Plan:</strong> {{ subscription.plan.name }}</p>
+                    <p><strong>Estado:</strong> {{ subscription.get_status_display }}</p>
+                    <p><strong>Vigencia:</strong> {{ subscription.start_date }} → {{ subscription.end_date|default:'—' }}</p>
+                    <p><strong>Facturas este mes:</strong> {{ subscription.invoices_this_month }}{% if not subscription.plan.unlimited_invoices %} / {{ subscription.plan.max_invoices_per_month }}{% endif %}</p>
+                    <p><strong>Usuarios:</strong> {{ subscription.users_count }}{% if not subscription.plan.unlimited_users %} / {{ subscription.plan.max_users }}{% endif %}</p>
+                    <a href="{% url 'superadmin_subscription_update' subscription.id %}" class="btn btn-sm btn-outline-primary">Editar suscripción</a>
+                {% else %}
+                    <p class="text-muted">Esta empresa no tiene suscripción.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Usuarios ({{ company_users.count }})</h3></div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-sm">
+                    <thead><tr><th>#</th><th>Usuario</th><th>Nombre</th><th>Admin SaaS</th></tr></thead>
+                    <tbody>
+                    {% for u in company_users %}
+                        <tr><td>{{ u.id }}</td><td>{{ u.username }}</td><td>{{ u.names }}</td><td>{% if u.is_superadmin %}Sí{% else %}No{% endif %}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="text-center">Sin usuarios.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

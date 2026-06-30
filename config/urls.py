@@ -22,6 +22,7 @@ from core.dashboard.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('superadmin/', include('core.tenancy.urls')),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('login/', include('core.login.urls')),
     path('pos/', include('core.pos.urls')),

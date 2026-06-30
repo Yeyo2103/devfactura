@@ -44,6 +44,14 @@ class LoginAuthView(LoginView):
             UserAccess.objects.create(user=self.request.user)
         return HttpResponseRedirect(self.get_success_url())
 
+    def get_success_url(self):
+        url = self.get_redirect_url()
+        if url:
+            return url
+        if getattr(self.request.user, 'is_superadmin', False):
+            return reverse_lazy('superadmin_dashboard')
+        return settings.LOGIN_REDIRECT_URL
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Inicio de Sesión'

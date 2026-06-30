@@ -1,0 +1,29 @@
+{% extends 'superadmin/base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><h3 class="card-title">Empresas</h3>
+        <div class="card-tools"><a href="{% url 'superadmin_company_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Nueva empresa</a></div>
+    </div>
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover text-nowrap">
+            <thead><tr><th>#</th><th>Nombre comercial</th><th>Razón social</th><th>RUC</th><th>Ambiente</th><th>Usuarios</th><th></th></tr></thead>
+            <tbody>
+            {% for c in object_list %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td>{{ c.commercial_name }}</td>
+                    <td>{{ c.company_name }}</td>
+                    <td>{{ c.ruc }}</td>
+                    <td>{% if c.environment_type == 2 %}<span class="badge badge-danger">Producción</span>{% else %}<span class="badge badge-secondary">Pruebas</span>{% endif %}</td>
+                    <td>{{ c.users.count }}</td>
+                    <td><a href="{% url 'superadmin_company_manage' c.id %}" class="btn btn-xs btn-outline-primary">Gestionar</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="text-center">No hay empresas.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

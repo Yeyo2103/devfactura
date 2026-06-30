@@ -1,0 +1,57 @@
+{% extends 'superadmin/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>{{ total_companies }}</h3><p>Empresas</p></div>
+            <div class="icon"><i class="fas fa-building"></i></div>
+            <a href="{% url 'superadmin_company_list' %}" class="small-box-footer">Ver empresas <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>{{ active_subscriptions }}</h3><p>Suscripciones activas</p></div>
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <span class="small-box-footer">&nbsp;</span>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>{{ total_plans }}</h3><p>Planes</p></div>
+            <div class="icon"><i class="fas fa-tags"></i></div>
+            <a href="{% url 'superadmin_plan_list' %}" class="small-box-footer">Ver planes <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3 class="card-title">Empresas y suscripciones</h3>
+        <div class="card-tools"><a href="{% url 'superadmin_company_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Nueva empresa</a></div>
+    </div>
+    <div class="card-body table-responsive p-0">
+        <table class="table table-hover text-nowrap">
+            <thead><tr><th>#</th><th>Empresa</th><th>RUC</th><th>Ambiente</th><th>Plan</th><th>Estado</th><th>Vence</th><th>Facturas mes</th><th></th></tr></thead>
+            <tbody>
+            {% for c in companies %}
+                <tr>
+                    <td>{{ c.id }}</td>
+                    <td>{{ c.commercial_name }}</td>
+                    <td>{{ c.ruc }}</td>
+                    <td>{% if c.environment_type == 2 %}<span class="badge badge-danger">Producción</span>{% else %}<span class="badge badge-secondary">Pruebas</span>{% endif %}</td>
+                    {% with sub=c.subscription %}
+                    <td>{{ sub.plan.name|default:'—' }}</td>
+                    <td>{% if sub %}{% if sub.is_active %}<span class="badge badge-success">{{ sub.get_status_display }}</span>{% else %}<span class="badge badge-warning">{{ sub.get_status_display }}</span>{% endif %}{% else %}<span class="badge badge-dark">Sin suscripción</span>{% endif %}</td>
+                    <td>{{ sub.end_date|default:'—' }}</td>
+                    <td>{% if sub %}{{ sub.invoices_this_month }}{% if not sub.plan.unlimited_invoices %} / {{ sub.plan.max_invoices_per_month }}{% endif %}{% else %}—{% endif %}</td>
+                    {% endwith %}
+                    <td><a href="{% url 'superadmin_company_manage' c.id %}" class="btn btn-xs btn-outline-primary">Gestionar</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="9" class="text-center">No hay empresas registradas.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
