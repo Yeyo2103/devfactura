@@ -1,24 +1,162 @@
-.login-image {
+/* ===== Elegant login ===== */
+body.login-page {
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+}
+
+.elegant-login {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.elegant-card {
+    width: 100%;
+    max-width: 410px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    padding: 40px 36px 32px;
+    animation: elegantFadeIn 0.55s ease;
+}
+
+@keyframes elegantFadeIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.elegant-brand {
     text-align: center;
+    margin-bottom: 28px;
 }
 
-.lockscreen-wrapper {
-    width: 450px;
+.elegant-brand img {
+    max-height: 76px;
+    margin-bottom: 12px;
 }
 
-.login-image i {
-    padding: 15px;
-    margin-top: 10px;
-    margin-bottom: 15px;
+.elegant-brand .elegant-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #203a43, #2c5364);
+    color: #fff;
+    font-size: 40px;
+    box-shadow: 0 10px 24px rgba(44, 83, 100, 0.4);
 }
 
-@media (max-width: 768px) {
-    .login-box, .register-box {
-        width: 90%;
-        margin-top: 80px;
-    }
+.elegant-brand h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2d3d;
+    margin: 6px 0 2px;
 }
 
-.login-box p.details {
+.elegant-brand p {
+    color: #8b97a7;
     font-size: 14px;
+    margin: 0;
+}
+
+.elegant-card .form-group {
+    margin-bottom: 18px;
+}
+
+.elegant-card .form-group label {
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: #6b7685;
+    margin-bottom: 6px;
+}
+
+.elegant-card .input-group-text {
+    background: #f3f6f9;
+    border: 1px solid #dfe6ee;
+    border-right: 0;
+    color: #8390a2;
+    border-radius: 10px 0 0 10px;
+}
+
+.elegant-card .form-control {
+    height: 48px;
+    border: 1px solid #dfe6ee;
+    box-shadow: none !important;
+    font-size: 15px;
+}
+
+.elegant-card .input-group .form-control {
+    border-left: 0;
+}
+
+.elegant-card .form-control:focus {
+    border-color: #2c5364;
+}
+
+.elegant-card .input-group:focus-within .input-group-text {
+    border-color: #2c5364;
+    color: #2c5364;
+}
+
+.elegant-card .btnShowPassword {
+    background: #f3f6f9;
+    border: 1px solid #dfe6ee;
+    border-left: 0;
+    color: #8390a2;
+    border-radius: 0 10px 10px 0;
+}
+
+.elegant-card .btnShowPassword:hover {
+    color: #2c5364;
+}
+
+.btn-login {
+    height: 50px;
+    margin-top: 6px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #203a43, #2c5364);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-login:hover {
+    color: #fff;
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(44, 83, 100, 0.4);
+}
+
+.elegant-forgot {
+    text-align: center;
+    margin: 20px 0 0;
+    font-size: 14px;
+    color: #8b97a7;
+}
+
+.elegant-forgot a {
+    color: #2c5364;
+    font-weight: 600;
+}
+
+.elegant-footer {
+    margin-top: 22px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 12.5px;
+    letter-spacing: 0.4px;
+}
+
+@media (max-width: 480px) {
+    .elegant-card { padding: 32px 24px 26px; border-radius: 14px; }
 }
