@@ -59,6 +59,7 @@ LOCAL_APPS = [
     'core.report',
     'core.security',
     'core.user',
+    'core.tenancy',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS

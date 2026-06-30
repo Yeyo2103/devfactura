@@ -18,6 +18,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     is_password_change = models.BooleanField(default=False)
     password_reset_token = models.TextField(null=True, blank=True)
+    # --- Multi-tenant (SaaS) ---
+    company = models.ForeignKey('pos.Company', null=True, blank=True, on_delete=models.PROTECT, related_name='users', verbose_name='Empresa')
+    is_superadmin = models.BooleanField(default=False, verbose_name='Superadministrador de la plataforma')
 
     objects = UserManager()
 
@@ -36,6 +39,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_customer(self):
         return hasattr(self, 'customer')
+
+    def get_company(self):
+        """Empresa (tenant) a la que pertenece el usuario."""
+        return self.company
+
+    def has_active_subscription(self):
+        company = self.get_company()
+        if company is None:
+            return False
+        subscription = getattr(company, 'subscription', None)
+        return bool(subscription and subscription.is_active())
 
     def get_full_name(self):
         return self.names
@@ -89,6 +103,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         item['last_login'] = self.last_login.strftime('%Y-%m-%d') if self.last_login else None
         item['image'] = self.get_image()
         item['date_joined'] = self.date_joined.strftime('%Y-%m-%d')
+        item['company'] = {'id': self.company_id, 'name': self.company.commercial_name} if self.company_id else None
+        item['is_superadmin'] = self.is_superadmin
         return item
 
     def __str__(self):
