@@ -12,12 +12,8 @@
                 <div class="eg-side-deco eg-deco-1"></div>
                 <div class="eg-side-deco eg-deco-2"></div>
                 <div class="eg-side-content">
-                    {% if dashboard.image %}
-                        <img src="{{ dashboard.get_image }}" alt="logo" class="eg-logo">
-                    {% else %}
-                        <span class="eg-logo-icon"><i class="{{ dashboard.get_icon }}"></i></span>
-                    {% endif %}
-                    <h2>{{ dashboard.name|default:'Bienvenido' }}</h2>
+                    <span class="eg-logo-badge"><img src="{% static 'login/img/sri-logo.svg' %}" alt="SRI"></span>
+                    <h2>SRI</h2>
                     <p>Sistema de Facturación Electrónica</p>
                 </div>
             </div>
