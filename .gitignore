@@ -9,9 +9,7 @@ __pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-media
 **/migrations/*
-staticfiles/*
 logs/*
 .idea/*
 
@@ -376,7 +374,6 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,venv,intellij,django
-backups/
 invoice-master.zip
 .env.local
 .env.prod

@@ -1,0 +1,201 @@
+/* ================= Elegant two-panel login ================= */
+body.login-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #ffffff;
+    font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#eg-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: block;
+    pointer-events: none;
+}
+
+.eg-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.eg-box {
+    width: 100%;
+    max-width: 880px;
+    min-height: 520px;
+    display: flex;
+    background: #fff;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    animation: egIn 0.5s ease;
+}
+
+@keyframes egIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Brand side ---- */
+.eg-side {
+    position: relative;
+    flex: 0 0 42%;
+    max-width: 42%;
+    background: linear-gradient(150deg, #1e3c72, #2a5298 55%, #2c5364);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    overflow: hidden;
+}
+
+.eg-side-deco {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.eg-deco-1 { width: 240px; height: 240px; top: -70px; right: -70px; }
+.eg-deco-2 { width: 170px; height: 170px; bottom: -50px; left: -50px; background: rgba(255, 255, 255, 0.06); }
+
+.eg-side-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.eg-side-content .eg-logo { max-height: 96px; margin-bottom: 18px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.3)); }
+
+.eg-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+.eg-logo-badge img { height: 56px; display: block; }
+
+.eg-logo-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    margin-bottom: 18px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    font-size: 44px;
+}
+
+.eg-side-content h2 { font-size: 24px; font-weight: 700; margin: 0 0 6px; }
+.eg-side-content p { font-size: 14px; opacity: 0.85; margin: 0; }
+
+/* ---- Form side ---- */
+.eg-form {
+    flex: 1 1 58%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 44px 42px;
+}
+
+.eg-form-inner { width: 100%; max-width: 340px; }
+
+.eg-form h3 { font-size: 26px; font-weight: 700; color: #1f2d3d; margin: 0 0 4px; }
+.eg-sub { color: #95a1b1; font-size: 14px; margin: 0 0 28px; }
+
+.eg-form .form-group { margin-bottom: 20px; }
+
+.eg-form label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #6b7685;
+    margin-bottom: 7px;
+    display: block;
+}
+
+.eg-input { box-shadow: 0 1px 2px rgba(0,0,0,.04); border-radius: 12px; }
+
+.eg-input .input-group-text {
+    background: #fff;
+    border: 1.5px solid #e3e9f0;
+    border-right: 0;
+    color: #9aa7b8;
+    border-radius: 12px 0 0 12px;
+    padding-left: 16px;
+}
+
+.eg-input .form-control {
+    height: 50px;
+    border: 1.5px solid #e3e9f0;
+    border-left: 0;
+    box-shadow: none !important;
+    font-size: 15px;
+    color: #2d3a4a;
+    padding-left: 4px;
+}
+
+.eg-input .form-control::placeholder { color: #b9c2cf; }
+
+.eg-input:focus-within .input-group-text,
+.eg-input:focus-within .form-control { border-color: #2a5298; }
+.eg-input:focus-within .input-group-text { color: #2a5298; }
+
+.eg-input .btnShowPassword {
+    background: #fff;
+    border: 1.5px solid #e3e9f0;
+    border-left: 0;
+    color: #9aa7b8;
+    border-radius: 0 12px 12px 0;
+}
+.eg-input:focus-within .btnShowPassword { border-color: #2a5298; }
+.eg-input .btnShowPassword:hover { color: #2a5298; }
+
+.btn-eg {
+    height: 52px;
+    margin-top: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    color: #fff;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-eg:hover {
+    color: #fff;
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(42, 82, 152, 0.45);
+}
+
+.eg-forgot { text-align: center; margin: 22px 0 0; font-size: 14px; color: #95a1b1; }
+.eg-forgot a { color: #2a5298; font-weight: 700; text-decoration: none; }
+.eg-forgot a:hover { text-decoration: underline; }
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .eg-box { flex-direction: column; max-width: 420px; min-height: 0; }
+    .eg-side { flex: none; max-width: 100%; width: 100%; padding: 32px 20px; }
+    .eg-side-content .eg-logo, .eg-logo-icon { max-height: 70px; width: 70px; height: 70px; font-size: 32px; margin-bottom: 12px; }
+    .eg-side-content h2 { font-size: 20px; }
+    .eg-form { padding: 32px 26px; }
+    .eg-form-inner { max-width: 100%; }
+}
