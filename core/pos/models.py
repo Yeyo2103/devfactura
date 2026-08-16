@@ -712,7 +712,31 @@ class ElecBillingBase(TransactionSummary):
         return self.time_joined.strftime('%Y-%m-%d %H:%M:%S')
 
     def formatted_authorized_date(self):
-        return self.authorized_date.strftime('%Y-%m-%d') if self.authorized_date else ''
+        return self.authorized_date.strftime('%d/%m/%Y %H:%M:%S') if self.authorized_date else 'No autorizada'
+
+    def get_authorized_date_from_xml(self):
+        """
+        Lee la fecha de autorización directamente del XML autorizado.
+        Esta es la fecha que el SRI devolvió en la autorización.
+        """
+        try:
+            if self.authorized_xml:
+                from lxml import etree
+                import os
+                # Construir el path completo usando MEDIA_ROOT
+                xml_path = os.path.join(settings.MEDIA_ROOT, str(self.authorized_xml))
+                with open(xml_path, 'r', encoding='utf-8') as file:
+                    xml_content = file.read()
+                    root = etree.fromstring(xml_content.encode('utf-8'))
+                    # Buscar el elemento fechaAutorizacion en el XML
+                    fecha_element = root.find('.//fechaAutorizacion')
+                    if fecha_element is not None and fecha_element.text:
+                        return fecha_element.text.strip()
+            return self.formatted_authorized_date()
+        except Exception as e:
+            # Si hay error leyendo el XML, usar la fecha de la BD
+            print(f"Error leyendo XML: {e}")  # Para debug
+            return self.formatted_authorized_date()
 
     def get_authorized_xml(self):
         if self.authorized_xml:
@@ -759,11 +783,16 @@ class ElecBillingBase(TransactionSummary):
         except:
             pass
         finally:
-            if self.check_sequential_error(errors=errors) and change_status:
-                self.status = INVOICE_STATUS[4][0]
-                self.edit()
+            if self.check_sequential_error(errors=errors):
+                # Incrementar el secuencial para el siguiente intento
                 self.receipt.sequence = self.receipt.sequence + 1
                 self.receipt.save()
+                # NO marcar como error aquí - el flujo de reintento lo manejará
+                # Solo si change_status es True Y no estamos en modo reintento
+            elif change_status:
+                # Para otros errores, marcar como error normalmente si es necesario
+                # (esto depende de tu lógica de negocio)
+                pass
 
     def generate_receipt_number(self, increase=True):
         if isinstance(self.receipt.sequence, str):
@@ -805,21 +834,60 @@ class ElecBillingBase(TransactionSummary):
         allowed, message = self.check_subscription_for_emission()
         if not allowed:
             return {'resp': False, 'stage': VOUCHER_STAGE[0][0], 'error': message}
-        sri = SRI()
-        response = sri.create_xml(self)
-        if response['resp']:
-            response = sri.firm_xml(instance=self, xml=response['xml'])
+        
+        # Intentar hasta 3 veces en caso de error secuencial
+        max_sequential_retries = 3
+        last_response = None
+        
+        for retry_count in range(max_sequential_retries):
+            sri = SRI()
+            response = sri.create_xml(self)
             if response['resp']:
-                response = sri.validate_xml(instance=self, xml=response['xml'])
+                response = sri.firm_xml(instance=self, xml=response['xml'])
                 if response['resp']:
-                    response = sri.authorize_xml(instance=self)
-                    index = 1
-                    while not response['resp'] and index < 3:
-                        time.sleep(1)
+                    response = sri.validate_xml(instance=self, xml=response['xml'])
+                    if response['resp']:
                         response = sri.authorize_xml(instance=self)
-                        index += 1
-                    return response
-        return response
+                        index = 1
+                        while not response['resp'] and index < 3:
+                            time.sleep(1)
+                            response = sri.authorize_xml(instance=self)
+                            index += 1
+                        # Si fue exitoso, retornar
+                        if response['resp']:
+                            return response
+            
+            # Guardar la última respuesta
+            last_response = response
+            
+            # Verificar si es error secuencial para reintentar
+            is_sequential_error = self.check_sequential_error(errors=response)
+            
+            # Si NO es error secuencial, retornar inmediatamente
+            if not is_sequential_error:
+                return response
+            
+            # Si es el último intento, retornar el error
+            if retry_count == max_sequential_retries - 1:
+                # Marcar como error secuencial solo en el último intento
+                self.status = INVOICE_STATUS[4][0]
+                self.save()
+                return response
+            
+            # Si es error secuencial y quedan reintentos, regenerar el comprobante
+            # El método create_receipt_error ya incrementó el secuencial
+            try:
+                self.receipt.refresh_from_db()  # Refrescar para obtener el nuevo secuencial
+                self.receipt_number = self.generate_receipt_number(increase=False)
+                self.receipt_number_full = self.get_receipt_number_full()
+                self.access_code = None  # Resetear para generar nueva clave de acceso
+                self.save()
+                time.sleep(0.5)  # Pequeña pausa antes de reintentar
+            except Exception as e:
+                # Si hay error en la regeneración, retornar el error original
+                return last_response
+        
+        return last_response if last_response else {'resp': False, 'error': 'Error desconocido'}
 
     def get_client_from_model(self):
         return self.customer if isinstance(self, Invoice) else self.invoice.customer if isinstance(self, CreditNote) else None

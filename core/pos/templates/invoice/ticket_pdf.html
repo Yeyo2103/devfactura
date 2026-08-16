@@ -102,7 +102,7 @@
         <b>Número de cédula:</b> {{ object.customer.dni }}<br>
         {% if object.is_invoice %}
             <b>Factura:</b> {{ object.receipt_number_full }}<br>
-            <b>Fecha de autorización:</b> {{ object.formatted_authorized_date }}<br>
+            <b>Fecha de autorización:</b> {{ object.get_authorized_date_from_xml }}<br>
             <b>Fecha de emisión:</b> {{ object.formatted_date_joined }}<br>
             <b>Ambiente:</b> {{ object.company.get_environment_type_display }}<br>
             <b>Emisión:</b> {{ object.company.get_emission_type_display }}<br>

@@ -142,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es-ec'
 
-TIME_ZONE = 'US/Pacific'
+TIME_ZONE = 'America/Guayaquil'  # Ecuador timezone (ECT - UTC-5)
 
 USE_I18N = True
 

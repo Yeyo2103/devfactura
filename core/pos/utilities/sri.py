@@ -1,4 +1,5 @@
 import base64
+import os
 import os.path
 import random
 import string
@@ -8,13 +9,16 @@ from itertools import cycle
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+import pytz
 import requests
 from django.core.files import File
+from django.utils import timezone
 from lxml import etree
 from suds.client import Client
 
 from config import settings
 from core.pos.choices import VOUCHER_STAGE, INVOICE_STATUS
+from core.pos.utilities.permissions import ensure_media_directory_permissions
 
 
 class SRI:
@@ -157,19 +161,49 @@ class SRI:
                     xml_authorization = etree.Element('autorizacion')
                     etree.SubElement(xml_authorization, 'estado').text = receipt.estado
                     etree.SubElement(xml_authorization, 'numeroAutorizacion').text = receipt.numeroAutorizacion
-                    etree.SubElement(xml_authorization, 'fechaAutorizacion', attrib={'class': "fechaAutorizacion"}).text = str(receipt.fechaAutorizacion.strftime("%d/%m/%Y %H:%M:%S"))
+                    
+                    # Manejar la fecha de autorización de forma robusta con zona horaria
+                    fecha_autorizacion = receipt.fechaAutorizacion
+                    
+                    # Convertir a zona horaria de Ecuador si es necesario
+                    if hasattr(fecha_autorizacion, 'tzinfo'):
+                        # Es un datetime con zona horaria
+                        ecuador_tz = pytz.timezone('America/Guayaquil')
+                        if fecha_autorizacion.tzinfo is None:
+                            # Naive datetime, asumimos que ya está en Ecuador
+                            fecha_local = fecha_autorizacion
+                        else:
+                            # Aware datetime, convertir a Ecuador
+                            fecha_local = fecha_autorizacion.astimezone(ecuador_tz)
+                        fecha_str = fecha_local.strftime("%d/%m/%Y %H:%M:%S")
+                    elif hasattr(fecha_autorizacion, 'strftime'):
+                        # Es un objeto datetime sin timezone info
+                        fecha_str = fecha_autorizacion.strftime("%d/%m/%Y %H:%M:%S")
+                    else:
+                        # Es un string, usarlo tal cual
+                        fecha_str = str(fecha_autorizacion)
+                    
+                    etree.SubElement(xml_authorization, 'fechaAutorizacion', attrib={'class': "fechaAutorizacion"}).text = fecha_str
                     voucher_sri = etree.SubElement(xml_authorization, 'comprobante')
                     voucher_sri.text = etree.CDATA(receipt.comprobante)
                     xml_text = etree.tostring(xml_authorization, encoding="utf8", xml_declaration=True).decode('utf8').replace("'", '"')
                     with NamedTemporaryFile(delete=True) as file_temp:
                         xml_path = f'xml/{instance.receipt.get_name_file()}-{instance.receipt_number_full}.xml'
+                        
+                        # Asegurar que el directorio existe con permisos correctos
+                        full_path = os.path.join(settings.MEDIA_ROOT, 'authorized_xml', datetime.now().strftime('%Y/%m/%d'))
+                        ensure_media_directory_permissions(full_path)
+                        
                         file_temp.write(xml_text.encode())
                         file_temp.flush()
                         instance.authorized_xml.save(name=xml_path, content=File(file_temp))
-                        instance.authorized_date = receipt.fechaAutorizacion
-                        # instance.create_authorized_pdf()
+                        
+                        # Guardar fecha de autorización de forma explícita
+                        instance.authorized_date = fecha_autorizacion
                         instance.status = INVOICE_STATUS[1][0]
-                        instance.save()
+                        instance.save(update_fields=['authorized_xml', 'authorized_date', 'status'])
+                        
+                        # instance.create_authorized_pdf()
                         response['resp'] = True
         except Exception as e:
             response['error'] = str(e)

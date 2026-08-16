@@ -143,7 +143,7 @@
                 <p class="text-content">
                     <b style="font-size: 20px">{{ object.receipt.name }} {{ object.receipt_number_full }}</b><br>
                     <b>Autorización:</b><br>{{ object.access_code }}<br>
-                    <b>Fecha de autorización:</b><br>{{ object.formatted_authorized_date }}<br>
+                    <b>Fecha de autorización:</b><br>{{ object.get_authorized_date_from_xml }}<br>
                     <b>Clave de acceso:</b><br>
                     <img alt="" class="img-fluid barcode" src="{{ object.access_code_barcode }}">
                 </p>
