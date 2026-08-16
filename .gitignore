@@ -377,4 +377,3 @@ pip-selfcheck.json
 invoice-master.zip
 .env.local
 .env.prod
-*.sql
