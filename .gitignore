@@ -375,5 +375,3 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,venv,intellij,django
 invoice-master.zip
-.env.local
-.env.prod
